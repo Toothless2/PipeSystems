@@ -6,78 +6,68 @@ namespace Pipes
     public class ConnectPipe : MonoBehaviour
     {
         public GameObject pipeNub;
+
+        private float waitTime;
         private RaycastHit hit;
         private Vector3 thisPipesPositon;
         private GameObject spawnedNub;
+
+
+        GameObject[] spawnedNubs = new GameObject[6];
 
         // Use this for initialization
         void Start()
         {
             thisPipesPositon = transform.position;
-            CheckForPipes();
+            CheckForPipes(Vector3.forward, 0);
+            CheckForPipes(Vector3.back, 1);
+            CheckForPipes(Vector3.up, 2);
+            CheckForPipes(Vector3.down, 3);
+            CheckForPipes(Vector3.right, 4);
+            CheckForPipes(Vector3.left, 5);
         }
 
         // Update is called once per frame
         void Update()
         {
-
+            if(Time.time > waitTime)
+            {
+                waitTime = Time.time + Random.Range(0.5f, 3f);
+                CheckForPipes(Vector3.forward, 0);
+                CheckForPipes(Vector3.back, 1);
+                CheckForPipes(Vector3.up, 2);
+                CheckForPipes(Vector3.down, 3);
+                CheckForPipes(Vector3.right, 4);
+                CheckForPipes(Vector3.left, 5);
+            }
         }
 
-        void CheckForPipes()
+        void CheckForPipes(Vector3 direction, int arrayIndex)
         {
-            if(Physics.Raycast(transform.position, transform.forward, out hit, 1))
+            Vector3 rotation;
+
+            if(direction == Vector3.down || direction == Vector3.up)
             {
-                if(hit.transform.tag == "Pipe")
-                {
-                    spawnedNub = (GameObject)Instantiate(pipeNub, thisPipesPositon + (Vector3.forward * 0.35f), Quaternion.Euler(0, 0, 0));
-                    spawnedNub.transform.SetParent(transform);
-                }
+                rotation = new Vector3(90, 0, 0);
+            }   
+            else if(direction == Vector3.right || direction == Vector3.left)
+            {
+                rotation = new Vector3(0, 90, 0);
+            }
+            else
+            {
+                rotation = Vector3.zero;
             }
 
-            if (Physics.Raycast(transform.position, (transform.forward * -1), out hit, 1))
+            if(Physics.Raycast(thisPipesPositon, direction, out hit, 1))
             {
-                if (hit.transform.tag == "Pipe")
+                if(spawnedNubs[arrayIndex] == null)
                 {
-                    spawnedNub = (GameObject)Instantiate(pipeNub, thisPipesPositon + -(Vector3.forward * 0.35f), Quaternion.Euler(0, 0, 0));
-                    spawnedNub.transform.SetParent(transform);
-                }
-            }
-            
-            if (Physics.Raycast(transform.position, transform.up, out hit, 1))
-            {
-                if (hit.transform.tag == "Pipe")
-                {
-                    spawnedNub = (GameObject)Instantiate(pipeNub, thisPipesPositon + (Vector3.up * 0.35f), Quaternion.Euler(90, 0, 0));
-                    spawnedNub.transform.SetParent(transform);
-                }
-            }
-
-            if (Physics.Raycast(transform.position, (transform.up * -1), out hit, 1))
-            {
-
-                if (hit.transform.tag == "Pipe")
-                {
-                    spawnedNub = (GameObject)Instantiate(pipeNub, thisPipesPositon + -(Vector3.up * 0.35f), Quaternion.Euler(90, 0, 0));
-                    spawnedNub.transform.SetParent(transform);
-                }
-            }
-
-            if (Physics.Raycast(transform.position, transform.right, out hit, 1))
-            {
-                if (hit.transform.tag == "Pipe")
-                {
-                    spawnedNub = (GameObject)Instantiate(pipeNub, thisPipesPositon + (Vector3.right * 0.35f), Quaternion.Euler(0, 90, 0));
-                    spawnedNub.transform.SetParent(transform);
-                }
-            }
-
-            if (Physics.Raycast(transform.position, (transform.right * -1), out hit, 1))
-            {
-
-                if (hit.transform.tag == "Pipe")
-                {
-                    spawnedNub = (GameObject)Instantiate(pipeNub, thisPipesPositon + (Vector3.left * 0.35f), Quaternion.Euler(0, 90, 0));
-                    spawnedNub.transform.SetParent(transform);
+                    if (hit.transform.tag == "Pipe")
+                    {
+                        spawnedNubs[arrayIndex] = (GameObject)Instantiate(pipeNub, thisPipesPositon + (direction * 0.35f), Quaternion.Euler(rotation));
+                        spawnedNubs[arrayIndex].transform.SetParent(transform);
+                    }
                 }
             }
         }

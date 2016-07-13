@@ -1,7 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class PipeConnections : MonoBehaviour {
+public class PipeConnections : MonoBehaviour
+{
 
 	// Use this for initialization
 	void Start () {
