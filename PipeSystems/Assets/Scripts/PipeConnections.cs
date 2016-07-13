@@ -1,16 +1,26 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
-public class PipeConnections : MonoBehaviour
+namespace Pipes
 {
-
-	// Use this for initialization
-	void Start () {
-	
-	}
-	
-	// Update is called once per frame
-	void Update () {
-	
-	}
+    public class PipeConnections : MonoBehaviour
+    {
+        public List<PipeConnectionDirections> connectionDirections;
+        
+        void Update()
+        {
+            for(int i = 0; i < 6; i++)
+            {
+                if(GetComponent<ConnectPipe>().spawnedNubs[i] != null)
+                {
+                    connectionDirections[i].hasConnection = true;
+                }
+                else
+                {
+                    connectionDirections[i].hasConnection = false;
+                }
+            }
+        }
+    }
 }
