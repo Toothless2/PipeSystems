@@ -5,31 +5,41 @@ namespace Pipes
 {
     public class ConnectPipe : MonoBehaviour
     {
-        public GameObject pipeNub;
-        public GameObject[] spawnedNubs = new GameObject[6];
+        public GameObject pipeConnector;
+        public GameObject pipeCap;
+        public LayerMask checkedLayers;
+        [Tooltip("The Pipes Z - 0.5")]
+        public float pipeSize;
+        public float pipeSpeed;
+
+        private GameObject[] pipeConnectors = new GameObject[6];
+        private GameObject[] pipeCaps = new GameObject[6];
 
         private float waitTime;
         private RaycastHit hit;
-        private Vector3 thisPipesPositon;
+        public Vector3 thisPipesPositon;
 
         // Use this for initialization
-        void Start()
+        void OnEnable()
         {
+            GetComponent<Transform>().localScale = new Vector3(pipeSize, pipeSize, pipeSize);
+
             thisPipesPositon = transform.position;
             CheckForPipes(Vector3.forward, 0);
             CheckForPipes(Vector3.back, 1);
             CheckForPipes(Vector3.up, 2);
             CheckForPipes(Vector3.down, 3);
-            CheckForPipes(Vector3.right, 4);
             CheckForPipes(Vector3.left, 5);
+            CheckForPipes(Vector3.right, 4);
         }
 
         // Update is called once per frame
-        void Update()
+        void FixedUpdate()
         {
             if(Time.time > waitTime)
             {
-                waitTime = Time.time + Random.Range(0.5f, 3f);
+                waitTime = Time.time + Random.Range(0.5f, 1.0f);
+                thisPipesPositon = transform.position;
                 CheckForPipes(Vector3.forward, 0);
                 CheckForPipes(Vector3.back, 1);
                 CheckForPipes(Vector3.up, 2);
@@ -42,7 +52,6 @@ namespace Pipes
         void CheckForPipes(Vector3 direction, int arrayIndex)
         {
             Vector3 rotation;
-            GetComponent<PipeConnections>().connectionDirections[arrayIndex].direction = direction;
 
             //sets the rotation of the nub correctly depending on what direction was passed into the function
             if(direction == Vector3.down || direction == Vector3.up)
@@ -59,28 +68,54 @@ namespace Pipes
             }
 
             //checks if a pipe exists in that direction
-            if(Physics.Raycast(thisPipesPositon, direction, out hit, 1))
+            if(Physics.Raycast(thisPipesPositon, direction, out hit, 1, checkedLayers))
             {
-                //if their already is a nub at that index tht is passed into the function dont spawn another one
-                if(spawnedNubs[arrayIndex] == null)
+                if(hit.transform != transform)
                 {
-                    if (hit.transform.tag == "Pipe")
+                    //if their already is a nub at that index tht is passed into the function dont spawn another one
+                    if (pipeConnectors[arrayIndex] == null)
                     {
-                        //spawns a nub(connection) and sets its parent to the pipe object to keep the inspector tidy
-                        spawnedNubs[arrayIndex] = (GameObject)Instantiate(pipeNub, thisPipesPositon + (direction * 0.35f), Quaternion.Euler(rotation));
-                        spawnedNubs[arrayIndex].transform.SetParent(transform);
+                        if (hit.transform.tag == "Pipe")
+                        {
+                            //removes the pipe cap from the pipe so items cam travel through them
+                            RemovePipeCap(arrayIndex);
+
+                            //spawns a nub(connection) and sets its parent to the pipe object to keep the inspector tidy
+                            pipeConnectors[arrayIndex] = (GameObject)Instantiate(pipeConnector, thisPipesPositon + (direction * pipeSize), Quaternion.Euler(rotation));
+                            pipeConnectors[arrayIndex].transform.SetParent(transform);
+                        }
                     }
                 }
             }
-            else
+            else if(pipeConnectors[arrayIndex] != null)
+            //if their is no pipe and their was a connection at that point destry the connection
             {
-                //if their is no pipe and their was a connection at that point destry the connection
-                if(spawnedNubs[arrayIndex] != null)
-                {
-                    Destroy(spawnedNubs[arrayIndex]);
-                    spawnedNubs[arrayIndex] = null;
-                }
+                //destroys the pipe connector
+                Destroy(pipeConnectors[arrayIndex]);
+                pipeConnectors[arrayIndex] = null;
+
+                //spawns a pipe cap so that items dont travel out of the pipe
+                SpawnPipeCap(rotation, direction, arrayIndex);
             }
+            else if(pipeCaps[arrayIndex] == null)
+            {
+                SpawnPipeCap(rotation, direction, arrayIndex);
+            }
+        }
+        
+
+        void SpawnPipeCap(Vector3 rotation, Vector3 direction, int arrayIndex)
+        {
+            //spawns a pipe cap at the crrect localtion and adds it to the array
+            pipeCaps[arrayIndex] =  (GameObject)Instantiate(pipeCap, thisPipesPositon + (direction * 0.2f), Quaternion.Euler(rotation));
+            pipeCaps[arrayIndex].transform.SetParent(transform);
+        }
+
+        void RemovePipeCap(int arrayIndex)
+        {
+            //destroys the pipe cap at the given index
+            Destroy(pipeCaps[arrayIndex]);
+            pipeCaps[arrayIndex] = null;
         }
     }
 }

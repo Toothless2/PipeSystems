@@ -10,9 +10,10 @@ namespace Pipes
         
         void Update()
         {
+            /*
             for(int i = 0; i < 6; i++)
             {
-                if(GetComponent<ConnectPipe>().spawnedNubs[i] != null)
+                if(GetComponent<ConnectPipe>().pipeConnectors[i] != null)
                 {
                     connectionDirections[i].hasConnection = true;
                 }
@@ -21,6 +22,7 @@ namespace Pipes
                     connectionDirections[i].hasConnection = false;
                 }
             }
+            */
         }
     }
 }
