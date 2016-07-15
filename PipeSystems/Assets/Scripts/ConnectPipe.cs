@@ -51,22 +51,6 @@ namespace Pipes
 
         void CheckForPipes(Vector3 direction, int arrayIndex)
         {
-            Vector3 rotation;
-
-            //sets the rotation of the nub correctly depending on what direction was passed into the function
-            if(direction == Vector3.down || direction == Vector3.up)
-            {
-                rotation = new Vector3(90, 0, 0);
-            }   
-            else if(direction == Vector3.right || direction == Vector3.left)
-            {
-                rotation = new Vector3(0, 90, 0);
-            }
-            else
-            {
-                rotation = Vector3.zero;
-            }
-
             //checks if a pipe exists in that direction
             if(Physics.Raycast(thisPipesPositon, direction, out hit, 1, checkedLayers))
             {
@@ -81,7 +65,8 @@ namespace Pipes
                             RemovePipeCap(arrayIndex);
 
                             //spawns a nub(connection) and sets its parent to the pipe object to keep the inspector tidy
-                            pipeConnectors[arrayIndex] = (GameObject)Instantiate(pipeConnector, thisPipesPositon + (direction * pipeSize), Quaternion.Euler(rotation));
+                            pipeConnectors[arrayIndex] = (GameObject)Instantiate(pipeConnector, thisPipesPositon + (direction * pipeSize), Quaternion.Euler(0, 0, 0));
+                            pipeConnectors[arrayIndex].transform.LookAt(transform.position);
                             pipeConnectors[arrayIndex].transform.SetParent(transform);
                         }
                     }
@@ -95,19 +80,20 @@ namespace Pipes
                 pipeConnectors[arrayIndex] = null;
 
                 //spawns a pipe cap so that items dont travel out of the pipe
-                SpawnPipeCap(rotation, direction, arrayIndex);
+                SpawnPipeCap(direction, arrayIndex);
             }
             else if(pipeCaps[arrayIndex] == null)
             {
-                SpawnPipeCap(rotation, direction, arrayIndex);
+                SpawnPipeCap(direction, arrayIndex);
             }
         }
         
 
-        void SpawnPipeCap(Vector3 rotation, Vector3 direction, int arrayIndex)
+        void SpawnPipeCap(Vector3 direction, int arrayIndex)
         {
             //spawns a pipe cap at the crrect localtion and adds it to the array
-            pipeCaps[arrayIndex] =  (GameObject)Instantiate(pipeCap, thisPipesPositon + (direction * 0.2f), Quaternion.Euler(rotation));
+            pipeCaps[arrayIndex] =  (GameObject)Instantiate(pipeCap, thisPipesPositon + (direction * 0.2f), Quaternion.Euler(0, 0, 0));
+            pipeCaps[arrayIndex].transform.LookAt(transform.position);
             pipeCaps[arrayIndex].transform.SetParent(transform);
         }
 

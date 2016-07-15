@@ -172,7 +172,7 @@ namespace Pipes
 
         RaycastHit Raycast(Vector3 direction)
         {
-            Debug.DrawRay(transform.position, direction, Color.red, 5);
+            //Debug.DrawRay(transform.position, direction, Color.red, 5);
             Physics.Raycast(transform.position, direction, out hit, 1, ignoredLayer);
             return hit;
         }
