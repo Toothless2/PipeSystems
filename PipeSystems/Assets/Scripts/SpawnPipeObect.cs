@@ -20,7 +20,7 @@ namespace Pipes
         {
             if(Time.time > waitTime)
             {
-                waitTime = Time.time + 0.5f;
+                waitTime = Time.time + 1f;
                 //Instantiate(pipeItem, transform.position, transform.rotation);
             }
         }

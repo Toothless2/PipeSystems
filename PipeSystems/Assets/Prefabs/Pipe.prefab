@@ -10,6 +10,7 @@ GameObject:
   - 4: {fileID: 471482}
   - 33: {fileID: 3314590}
   - 65: {fileID: 6597848}
+  - 114: {fileID: 11408342}
   m_Layer: 10
   m_Name: PipeItemDirector
   m_TagString: ItemDirector
@@ -43,7 +44,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 135902}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -6, y: 0.5, z: 0}
+  m_LocalPosition: {x: -7, y: 0.5, z: 1}
   m_LocalScale: {x: 0.4, y: 0.4, z: 0.4}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
@@ -127,6 +128,18 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &11408342
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 134014}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c055a4dbde4f574aa17e51e29589fc6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isRoutingPipe: 0
 --- !u!114 &11488674
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -143,8 +156,18 @@ MonoBehaviour:
   checkedLayers:
     serializedVersion: 2
     m_Bits: 512
+  ignoredLayers:
+    serializedVersion: 2
+    m_Bits: 4352
   pipeSize: 0.35
   pipeSpeed: 1
+  connectedPipes:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
   thisPipesPositon: {x: 0, y: 0, z: 0}
 --- !u!1001 &100100000
 Prefab:

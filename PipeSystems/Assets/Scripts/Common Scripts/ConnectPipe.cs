@@ -8,11 +8,14 @@ namespace Pipes
         public GameObject pipeConnector;
         public GameObject pipeCap;
         public LayerMask checkedLayers;
+        public LayerMask ignoredLayers;
         [Tooltip("The Pipes Z - 0.5")]
         public float pipeSize;
         public float pipeSpeed;
 
-        private GameObject[] pipeConnectors = new GameObject[6];
+        [System.NonSerialized]
+        public GameObject[] pipeConnectors = new GameObject[6];
+        public GameObject[] connectedPipes = new GameObject[6];
         private GameObject[] pipeCaps = new GameObject[6];
 
         private float waitTime;
@@ -25,6 +28,8 @@ namespace Pipes
             GetComponent<Transform>().localScale = new Vector3(pipeSize, pipeSize, pipeSize);
 
             thisPipesPositon = transform.position;
+
+            //checks every face of the pipe for another pipe
             CheckForPipes(Vector3.forward, 0);
             CheckForPipes(Vector3.back, 1);
             CheckForPipes(Vector3.up, 2);
@@ -33,19 +38,44 @@ namespace Pipes
             CheckForPipes(Vector3.right, 4);
         }
 
-        // Update is called once per frame
-        void FixedUpdate()
+       public void DestroyPipe()
         {
-            if(Time.time > waitTime)
+            Destroy(gameObject);
+        }
+
+        public void UpdateConnectios()
+        {
+            thisPipesPositon = transform.position;
+
+            //checks every face of the pipe for another pipe
+            UpdateConnectionsCheck(Vector3.forward, 0);
+            UpdateConnectionsCheck(Vector3.back, 1);
+            UpdateConnectionsCheck(Vector3.up, 2);
+            UpdateConnectionsCheck(Vector3.down, 3);
+            UpdateConnectionsCheck(Vector3.left, 5);
+            UpdateConnectionsCheck(Vector3.right, 4);
+        }
+
+        void UpdateConnectionsCheck(Vector3 direction, int arrayIndex)
+        {
+            //if their is not a pipe in the direction add a cap to that side
+            if(!Physics.Raycast(thisPipesPositon, direction, out hit, 1, checkedLayers))
             {
-                waitTime = Time.time + Random.Range(0.5f, 1.0f);
-                thisPipesPositon = transform.position;
-                CheckForPipes(Vector3.forward, 0);
-                CheckForPipes(Vector3.back, 1);
-                CheckForPipes(Vector3.up, 2);
-                CheckForPipes(Vector3.down, 3);
-                CheckForPipes(Vector3.right, 4);
-                CheckForPipes(Vector3.left, 5);
+                if(pipeConnectors[arrayIndex] != null)
+                {
+                    Destroy(pipeConnectors[arrayIndex]);
+
+                    SpawnPipeCap(direction, arrayIndex);
+                    connectedPipes[arrayIndex] = null;
+
+                    if(GetComponent<RoutingPipe>() != null)
+                    {
+                        if (GetComponent<RoutingPipe>().isRoutingPipe)
+                        {
+                            GetComponent<RoutingPipe>().ForceUpdate();
+                        }
+                    }
+                }
             }
         }
 
@@ -64,10 +94,14 @@ namespace Pipes
                             //removes the pipe cap from the pipe so items cam travel through them
                             RemovePipeCap(arrayIndex);
 
+                            //addas the connecting pipe to the array
+                            connectedPipes[arrayIndex] = hit.transform.gameObject;
+
                             //spawns a nub(connection) and sets its parent to the pipe object to keep the inspector tidy
                             pipeConnectors[arrayIndex] = (GameObject)Instantiate(pipeConnector, thisPipesPositon + (direction * pipeSize), Quaternion.Euler(0, 0, 0));
                             pipeConnectors[arrayIndex].transform.LookAt(transform.position);
                             pipeConnectors[arrayIndex].transform.SetParent(transform);
+                            pipeConnectors[arrayIndex].GetComponent<ConnectorIndex>().myIndex = arrayIndex;
                         }
                     }
                 }
@@ -81,10 +115,14 @@ namespace Pipes
 
                 //spawns a pipe cap so that items dont travel out of the pipe
                 SpawnPipeCap(direction, arrayIndex);
+
+                //removes the connecting pipe from the array
+                connectedPipes[arrayIndex] = null;
             }
             else if(pipeCaps[arrayIndex] == null)
             {
                 SpawnPipeCap(direction, arrayIndex);
+                connectedPipes[arrayIndex] = null;
             }
         }
         
