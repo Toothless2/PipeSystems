@@ -89,11 +89,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 650cc1adb3359274f9a507294d5cf5e9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  itemSpeed: 7
-  ignoredLayer:
+  checkedLayers:
     serializedVersion: 2
-    m_Bits: 1280
-  hasDestination: 0
+    m_Bits: 1024
 --- !u!143 &14323644
 CharacterController:
   m_ObjectHideFlags: 1

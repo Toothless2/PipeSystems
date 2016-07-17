@@ -44,7 +44,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 135902}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -7, y: 0.5, z: 1}
+  m_LocalPosition: {x: -7, y: 1.5, z: 0}
   m_LocalScale: {x: 0.4, y: 0.4, z: 0.4}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
@@ -140,6 +140,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isRoutingPipe: 0
+  selectedConnector: {fileID: 0}
 --- !u!114 &11488674
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -160,7 +161,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4352
   pipeSize: 0.35
-  pipeSpeed: 1
+  pipeSpeed: 4.2
   connectedPipes:
   - {fileID: 0}
   - {fileID: 0}

@@ -8,13 +8,24 @@ namespace Pipes
         public bool isRoutingPipe;
 
         private GameObject[] connectors;
-        private GameObject selectedConnector;
+        public GameObject selectedConnector;
 
         void Start()
         {
             if (isRoutingPipe)
             {
                 ForceUpdate();
+            }
+        }
+
+        void Update()
+        {
+            if (isRoutingPipe)
+            {
+                if (selectedConnector == null)
+                {
+                    ForceUpdate();
+                }
             }
         }
 

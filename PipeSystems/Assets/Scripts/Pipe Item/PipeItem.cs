@@ -5,196 +5,114 @@ namespace Pipes
 {
     public class PipeItem : MonoBehaviour
     {
-        public float itemSpeed;
-        public LayerMask ignoredLayer;
+        public LayerMask checkedLayers;
 
-        private CharacterController myController;
         private RaycastHit hit;
-        private Transform lastTarget;
-        private Collider[] parent;
-        public bool hasDestination;
+        private bool hasTarget;
+        private bool isInPipe = true;
+        private float itemSpeed;
 
-        // Use this for initialization
-        void Start()
-        {
-            myController = GetComponent<CharacterController>();
-        }
-        
+        private GameObject target;
+
         void FixedUpdate()
         {
-            CheckForPipeCap();
-            //print(lastTarget.tag + " / " + lastTarget.position);
+            //cheks if the item is in a pipe
+            if (isInPipe)
+            {
+                //if it is move the item in the pipe
+                MoveItemItemInPipe();
+            }
         }
 
-        void CheckForPipeCap()
+        void MoveItemItemInPipe()
         {
-            //mosit onky used the first time the item is spawned
-            if (!hasDestination)
+            //if the item does not hvae a target give it one
+            if (!hasTarget)
             {
-                //checks if the pipe is open
-                RaycastForward();
+                //gets a target
+                ChangeDirection();
+                //looks at th target
+                transform.LookAt(target.transform.position);
+            }
+            //if the object had a target and it has been destryoed it is not in a pipe and it should fall to the ground
+            else if(target == null)
+            {
+                isInPipe = false;
+                gameObject.AddComponent<Rigidbody>();
+                GetComponent<Rigidbody>().useGravity = true;
+                GetComponent<Rigidbody>().isKinematic = false;
+            }
+            //checks if the itemm is close to the target
+            else if (Vector3.Distance(transform.position, target.transform.position) < 0.1f)
+            {
+                //if it is close set the position to the same as the targets
+                GetComponent<Transform>().position = target.transform.position;
 
-                if (hit.transform != null)
+                //checks if the target as a RoutingPipe component
+                if(target.GetComponent<RoutingPipe>() != null)
                 {
-                    ChangeDirection();
-                    lastTarget = hit.transform;
-                    hasDestination = true;
-                }
-            }
-            else if(lastTarget == null)
-            {
-                hasDestination = false;
-            }
-            //if the item is near the destination
-            else if(Vector3.Distance(transform.position, lastTarget.root.position) < 0.01)
-            {
-                //set the items transfrom to the destinations trnsform
-                GetComponent<Transform>().position = lastTarget.transform.root.position;
-                //tels the item it does not have a destination
-                hasDestination = false;
-                
-                //pipe connectos dont have this script so will gave an error when item goes thorugh a routing pipe
-                if(lastTarget.GetComponent<RoutingPipe>() != null)
-                {
-                    //if the pipe that the item is current in is a routing ppipe go in the dorection thatt it needs to
-                    if (lastTarget.GetComponent<RoutingPipe>().isRoutingPipe)
+                    //checks it the target is a routing pipe
+                    if (target.GetComponent<RoutingPipe>().isRoutingPipe)
                     {
-                        if(lastTarget.GetComponent<RoutingPipe>().WhereDoIGo() != null)
-                        {
-                            //get the transfom of the connector that the item needs to go through
-                            Transform temp = lastTarget.GetComponent<RoutingPipe>().WhereDoIGo();
-                            //set that to the target
-                            lastTarget = temp;
-                            //point at the connector
-                            transform.LookAt(lastTarget.position);
-                            //tell the object that it has a destinatin (the pipe connector)
-                            hasDestination = true;
-                        }
+                        //looks at the selected connector
+                        transform.LookAt(target.GetComponent<RoutingPipe>().selectedConnector.transform.position);
+                        //moves in that direction
+                        ChangeDirection();
                     }
                     else
                     {
-                        //if it is not a routing pipe check if the item cam go forward
-                        RaycastForward();
-
-                        //if their is a pipe cap infront of the item it cannot go forward
-                        //so it changes direction
-                        if (hit.transform.tag == "PipeCap")
-                        {
-                            //sets to false so that it cannot detect the same destination twice in a row
-                            lastTarget.gameObject.SetActive(false);
-                            ChangeDirection();
-                            //sstes to true so other items can go through the pipe
-                            lastTarget.gameObject.SetActive(true);
-                            //sets the current destintion to the fount pipe
-                            lastTarget = hit.transform;
-                            //tells the item it has a destination
-                            hasDestination = true;
-                        }
-                        else
-                        {
-                            //if the pipe was connected to another pipe carry on going forward
-                            lastTarget = hit.transform;
-                        }
+                        //if the pipe is not a routing pipe is shoud checks for a new target
+                        ChangeDirection();
                     }
                 }
+                //everything that it detects should have one of those scripts but if it does not it will check for a new direction
                 else
                 {
-                    //if the current destination does not have a RoutingPipe script it is a pipe connector so the tiem can go forward
-                    RaycastForward();
-                    lastTarget = hit.transform;
+                    ChangeDirection();
                 }
             }
             else
             {
-                MoveForward(itemSpeed, lastTarget.root);
+                //move toward the target
+                MoveForward();
             }
-        }
-
-        void RaycastForward()
-        {
-            Physics.Raycast(transform.position, transform.forward, out hit, 0.5f);
-            //Debug.DrawRay(transform.position, transform.forward, Color.green, 5);
-        }
-
-        //move the item forward at the given speed
-        void MoveForward(float speed, Transform hit)
-        {
-            speed *= Time.deltaTime;
-            transform.position = Vector3.MoveTowards(transform.position, hit.position, speed);
         }
 
         void ChangeDirection()
         {
+            //tells the item it does not currently have a target
+            hasTarget = false;
+
             /*
-             * changes the items direction what a pipeCap is detected
-             * first it rechecks the front of the item then the right, left, up, down, and fianly it will
-             * reverse the items direction if their is no other option
-             */ 
+             *checks the forward, right, left, down, up, and back directions relative to the object for a pipe and if one is not found the object is destroyed 
+             */
 
-            Raycast(transform.forward);
+            CheckDirection(Vector3.forward);
 
-            if(hit.transform.tag != "PipeCap")
+            if (!hasTarget)
             {
-                //print("forward");
-                transform.LookAt(hit.transform.position);
-                itemSpeed = hit.transform.root.GetComponent<ConnectPipe>().pipeSpeed;
-            }
-            else
-            {
-                Raycast(transform.right);
+                CheckDirection(Vector3.right);
 
-                if(hit.transform.tag != "PipeCap")
+                if (!hasTarget)
                 {
-                    //print("right");
-                    transform.LookAt(hit.transform.position);
-                    itemSpeed = hit.transform.root.GetComponent<ConnectPipe>().pipeSpeed;
-                }
-                else
-                {
-                    //(equivelant to Vector3.left)
-                    Raycast(-transform.right);
+                    CheckDirection(Vector3.left);
 
-                    if (hit.transform.tag != "PipeCap")
+                    if (!hasTarget)
                     {
-                        //print("left");
-                        transform.LookAt(hit.transform.position);
-                        itemSpeed = hit.transform.root.GetComponent<ConnectPipe>().pipeSpeed;
-                    }
-                    else
-                    {
-                        Raycast(transform.up);
+                        CheckDirection(Vector3.down);
 
-                        if (hit.transform.tag != "PipeCap")
+                        if(!hasTarget)
                         {
-                            //print("up");
-                            transform.LookAt(hit.transform.position);
-                            itemSpeed = hit.transform.root.GetComponent<ConnectPipe>().pipeSpeed;
-                        }
-                        else
-                        {
-                            //(equivelan to Vector3.down)
-                            Raycast(-transform.up);
+                            CheckDirection(Vector3.up);
 
-                            if (hit.transform.tag != "PipeCap")
+                            if (!hasTarget)
                             {
-                                //print("down");
-                                transform.LookAt(hit.transform.position);
-                                itemSpeed = hit.transform.root.GetComponent<ConnectPipe>().pipeSpeed;
-                            }
-                            else
-                            {
-                                //(equivelant to Vector3.back)
-                                Raycast(-transform.forward);
+                                //checks the reverse direction last
+                                CheckDirection(Vector3.back);
 
-                                if (hit.transform.tag != "PipeCap")
+                                if (!hasTarget)
                                 {
-                                    //print("back");
-                                    transform.LookAt(hit.transform.position);
-                                    itemSpeed = hit.transform.root.GetComponent<ConnectPipe>().pipeSpeed;
-                                }
-                                else
-                                {
-                                    ///if the item is not in a pipe it should be destroyed
+                                    //if no directions yeild a result destroy the object
                                     Destroy(gameObject);
                                 }
                             }
@@ -204,16 +122,32 @@ namespace Pipes
             }
         }
 
-        void ForceMove(float itemSpeed)
+        void CheckDirection(Vector3 direction)
         {
-            transform.Translate(transform.forward * itemSpeed * Time.deltaTime);
+            //Debug.DrawRay(transform.position, direction, Color.green, 5);
+            Physics.Raycast(transform.position, transform.TransformDirection(direction), out hit, 1, checkedLayers);
+
+            //chesk that it hit something
+            if(hit.transform != null)
+            {
+                //checks that it did hit a pipe
+                if (hit.transform.tag == "ItemDirector")
+                {
+                    //sets the target to the detected object
+                    target = hit.transform.gameObject;
+                    //looks at the target
+                    transform.LookAt(target.transform.position);
+                    //gets the speed that the item should be traveling at
+                    itemSpeed = target.transform.root.GetComponent<ConnectPipe>().pipeSpeed;
+                    //tells the item it has a target
+                    hasTarget = true;
+                }
+            }
         }
 
-        RaycastHit Raycast(Vector3 direction)
+        void MoveForward()
         {
-            //Debug.DrawRay(transform.position, direction, Color.red, 5);
-            Physics.Raycast(transform.position, direction, out hit, 1, ignoredLayer);
-            return hit;
+            transform.Translate(target.transform.forward * itemSpeed * Time.deltaTime);
         }
     }
 }

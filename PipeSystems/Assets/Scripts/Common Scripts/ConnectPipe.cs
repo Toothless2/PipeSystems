@@ -11,6 +11,7 @@ namespace Pipes
         public LayerMask ignoredLayers;
         [Tooltip("The Pipes Z - 0.5")]
         public float pipeSize;
+        [Range(0.01f, 4.2f)]
         public float pipeSpeed;
 
         [System.NonSerialized]
@@ -38,7 +39,7 @@ namespace Pipes
             CheckForPipes(Vector3.right, 4);
         }
 
-       public void DestroyPipe()
+        public void DestroyPipe()
         {
             Destroy(gameObject);
         }
